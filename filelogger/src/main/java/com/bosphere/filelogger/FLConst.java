@@ -16,14 +16,18 @@ public interface FLConst {
         int I = 2;
         int W = 3;
         int E = 4;
+        int X = 5;
+        int G = 6;
     }
 
-    SparseArray<String> LevelName = new SparseArray<String>(5) {{
+    SparseArray<String> LevelName = new SparseArray<String>(6) {{
         append(Level.V, "V");
         append(Level.D, "D");
         append(Level.I, "I");
         append(Level.W, "W");
         append(Level.E, "E");
+        append(Level.X, "X");
+        append(Level.G, "G");
     }};
 
     interface RetentionPolicy {

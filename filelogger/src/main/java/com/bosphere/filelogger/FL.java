@@ -4,11 +4,22 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import static com.bosphere.filelogger.FLConst.Level.D;
 import static com.bosphere.filelogger.FLConst.Level.E;
+import static com.bosphere.filelogger.FLConst.Level.G;
 import static com.bosphere.filelogger.FLConst.Level.I;
 import static com.bosphere.filelogger.FLConst.Level.V;
 import static com.bosphere.filelogger.FLConst.Level.W;
+import static com.bosphere.filelogger.FLConst.Level.X;
 
 /**
  * Created by yangbo on 22/9/17.
@@ -18,6 +29,7 @@ public class FL {
 
     private volatile static boolean sEnabled;
     private volatile static FLConfig sConfig;
+    volatile static FLGameConfig sGameConfig;
 
     public static void setEnabled(boolean enabled) {
         sEnabled = enabled;
@@ -31,8 +43,27 @@ public class FL {
         sConfig = config;
     }
 
+    public static void setGameConfig(FLGameConfig gameConfig) {
+        sGameConfig = gameConfig;
+    }
     public static void v(String fmt, Object... args) {
         v(null, fmt, args);
+    }
+
+    public static void x(String fmt, Object... args) {
+        x(null, fmt, args);
+    }
+
+    public static void x(String tag, String fmt, Object... args) {
+        log(X, tag, FLUtil.format(fmt, args));
+    }
+
+    public static void g(String fmt, Object... args) {
+        g(null, fmt, args);
+    }
+
+    public static void g(String tag, String fmt, Object... args) {
+        log(G, tag, FLUtil.format(fmt, args));
     }
 
     public static void v(String tag, String fmt, Object... args) {
@@ -103,15 +134,15 @@ public class FL {
         ensureStatus();
 
         FLConfig config = sConfig;
-        if (level < config.b.minLevel) {
+        if (level < config.builder.minLevel) {
             return;
         }
 
         if (TextUtils.isEmpty(tag)) {
-            tag = config.b.defaultTag;
+            tag = config.builder.defaultTag;
         }
 
-        Loggable logger = config.b.logger;
+        Loggable logger = config.builder.logger;
         if (logger != null) {
             switch (level) {
                 case V:
@@ -129,16 +160,26 @@ public class FL {
                 case E:
                     logger.e(tag, log);
                     break;
+                case X:
+                    logger.w(tag, log);
+                    break;
+                case G:
+                    logger.i(tag, log);
             }
         }
 
-        if (config.b.logToFile && !TextUtils.isEmpty(config.b.dirPath)) {
+        if(level == FLConst.Level.G && sGameConfig == null) {
+            Log.e("FL", "game-config not found ...skipping file log");
+            return;
+        }
+
+        if (config.builder.logToFile && !TextUtils.isEmpty(config.builder.dirPath)) {
             long timeMs = System.currentTimeMillis();
-            String fileName = config.b.formatter.formatFileName(timeMs);
-            String line = config.b.formatter.formatLine(timeMs, FLConst.LevelName.get(level), tag, log);
+            String fileName = config.builder.formatter.formatFileName(level);
+            String line = config.builder.formatter.formatLine(timeMs, FLConst.LevelName.get(level), tag, log);
             boolean flush = level == E;
-            FileLoggerService.instance().logFile(config.b.context, fileName, config.b.dirPath, line,
-                    config.b.retentionPolicy, config.b.maxFileCount, config.b.maxSize, flush);
+            FileLoggerService.instance().logFile(config.builder.context, fileName, config.builder.dirPath, line,
+                                                 config.builder.retentionPolicy, config.builder.maxFileCount, config.builder.maxSize, flush);
         }
     }
 
@@ -147,5 +188,37 @@ public class FL {
             throw new IllegalStateException(
                     "FileLogger is not initialized. Forgot to call FL.init()?");
         }
+    }
+
+    public static File compressFiles(Context context) {
+        String prefix = new SimpleDateFormat("dd-MM-yyyy_HH-mm", Locale.getDefault()).format(new Date());
+        File zipFile = new File(context.getExternalFilesDir(null),  prefix + "_swoo.zip");
+        try {
+            FileOutputStream fos = new FileOutputStream(zipFile);
+            ZipOutputStream zipOS = new ZipOutputStream(fos);
+            File logDir = new File(sConfig.builder.dirPath);
+            for (File file : logDir.listFiles()) {
+                writeToZipFile(file, zipOS);
+            }
+
+            zipOS.close();
+            fos.close();
+        } catch (Exception ignored) {
+        }
+        return zipFile;
+    }
+
+    private static void writeToZipFile(File file, ZipOutputStream zipStream) throws Exception {
+        FileInputStream fis = new FileInputStream(file);
+        ZipEntry zipEntry = new ZipEntry(file.getName());
+        zipStream.putNextEntry(zipEntry);
+        byte[] bytes = new byte[1024];
+        int length = fis.read(bytes);
+        while (length >= 0) {
+            zipStream.write(bytes, 0, length);
+            length = fis.read(bytes);
+        }
+        zipStream.closeEntry();
+        fis.close();
     }
 }

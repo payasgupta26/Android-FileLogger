@@ -1,15 +1,23 @@
 package com.bosphere.fileloggerdemo;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ShareCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.bosphere.filelogger.FL;
+import com.bosphere.filelogger.FLGameConfig;
+
+import java.io.File;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,12 +45,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClickLog(View view) {
+    public void onClickLog(View view) throws PackageManager.NameNotFoundException {
         FL.v("this is a log");
         FL.d("this is a log");
         FL.i("this is a log");
         FL.w("this is a log");
         FL.e("this is a log");
-        FL.e("this is a log with exception", new RuntimeException("dummy exception"));
+        //FL.e("this is a log with exception", new RuntimeException("dummy exception"));
+        FL.x("this is x");
+        FL.setGameConfig(new FLGameConfig("abcd", System.currentTimeMillis()));
+        FL.g("this is game");
+        File zipFile = FL.compressFiles(this);
+        Uri pathUri =
+                FileProvider.getUriForFile(this, getPackageName()+".provider", zipFile);
+        Intent intent = ShareCompat.IntentBuilder.from(this)
+                                                 .setType("application/zip")
+                                                 .setStream(pathUri)
+                                                 .setSubject("app logs")
+                                                 .setEmailTo(new String[]{"payas@swoo.tv"})
+                                                 .setChooserTitle("share logs")
+                .getIntent();
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 }

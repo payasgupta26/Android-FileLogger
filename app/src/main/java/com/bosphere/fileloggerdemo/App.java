@@ -21,7 +21,7 @@ public class App extends Application {
         FL.init(new FLConfig.Builder(this)
                 .minLevel(FLConst.Level.V)
                 .logToFile(true)
-                .dir(new File(Environment.getExternalStorageDirectory(), "file_logger_demo"))
+                .dir(new File(getExternalFilesDir(null), "swoo-logs"))
                 .retentionPolicy(FLConst.RetentionPolicy.FILE_COUNT)
                 .build());
         FL.setEnabled(true);

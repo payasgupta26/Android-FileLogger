@@ -10,6 +10,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import static com.bosphere.filelogger.FLConst.Level.G;
+import static com.bosphere.filelogger.FLConst.Level.V;
+import static com.bosphere.filelogger.FLConst.Level.X;
 import static com.bosphere.filelogger.FLConst.RetentionPolicy.FILE_COUNT;
 import static com.bosphere.filelogger.FLConst.RetentionPolicy.TOTAL_SIZE;
 
@@ -19,10 +22,10 @@ import static com.bosphere.filelogger.FLConst.RetentionPolicy.TOTAL_SIZE;
 
 public class FLConfig {
 
-    final Builder b;
+    final Builder builder;
 
     private FLConfig(Builder b) {
-        this.b = b;
+        this.builder = b;
     }
 
     public static class Builder {
@@ -32,7 +35,7 @@ public class FLConfig {
         FileFormatter formatter;
         String dirPath;
         String defaultTag;
-        int minLevel = FLConst.Level.V;
+        int minLevel = V;
         boolean logToFile;
         int retentionPolicy = FILE_COUNT;
         int maxFileCount = FLConst.DEFAULT_MAX_FILE_COUNT;
@@ -224,13 +227,6 @@ public class FLConfig {
             }
         };
 
-        private final ThreadLocal<SimpleDateFormat> mFileNameFmt = new ThreadLocal<SimpleDateFormat>() {
-            @Override
-            protected SimpleDateFormat initialValue() {
-                return new SimpleDateFormat("MM_dd_HH", Locale.ENGLISH);
-            }
-        };
-
         private final ThreadLocal<Date> mDate = new ThreadLocal<Date>() {
             @Override
             protected Date initialValue() {
@@ -252,9 +248,12 @@ public class FLConfig {
         }
 
         @Override
-        public String formatFileName(long timeInMillis) {
-            mDate.get().setTime(timeInMillis);
-            return mFileNameFmt.get().format(mDate.get()) + "_00.txt";
+        public String formatFileName(int level) {
+            switch (level) {
+                case X:  return "swoo-log-x.txt";
+                case G: return FL.sGameConfig.getGameId() + "_" + FL.sGameConfig.getStartTime() + ".txt";
+                default: return "swoo-log.txt";
+            }
         }
     }
 }
