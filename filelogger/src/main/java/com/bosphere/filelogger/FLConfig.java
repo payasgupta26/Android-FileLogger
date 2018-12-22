@@ -251,7 +251,7 @@ public class FLConfig {
         public String formatFileName(int level) {
             switch (level) {
                 case X:  return "swoo-log-x.txt";
-                case G: return FL.sGameConfig.getGameId() + "_" + FL.sGameConfig.getStartTime() + ".txt";
+                case G: return FL.sGameConfig.getGameId() + "_" + FL.sGameConfig.getGameType() + "_" + FL.sGameConfig.getStartTime() + ".txt";
                 default: return "swoo-log.txt";
             }
         }
