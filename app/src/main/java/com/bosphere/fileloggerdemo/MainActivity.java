@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         FL.e("this is a log");
         //FL.e("this is a log with exception", new RuntimeException("dummy exception"));
         FL.x("this is x");
-        FL.setGameConfig(new FLGameConfig("abcd", System.currentTimeMillis()));
+        FL.setGameConfig(new FLGameConfig("abcd", "trivia", System.currentTimeMillis()));
         FL.g("this is game");
         File zipFile = FL.compressFiles(this);
         Uri pathUri =

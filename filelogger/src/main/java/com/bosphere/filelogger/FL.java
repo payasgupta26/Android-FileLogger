@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -33,6 +34,15 @@ public class FL {
 
     public static void setEnabled(boolean enabled) {
         sEnabled = enabled;
+    }
+
+    public static String getLogFilePath() {
+        return sConfig.builder.dirPath;
+    }
+
+    public static Boolean isGameFile(String fileName) {
+        String[] splitList = fileName.split("_");
+        return splitList.length == 3 && splitList[3].matches("\\d*");
     }
 
     public static void init(Context context) {
