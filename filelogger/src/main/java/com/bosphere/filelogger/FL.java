@@ -28,6 +28,7 @@ public class FL {
     private volatile static boolean sEnabled;
     private volatile static FLConfig sConfig;
     volatile static FLGameConfig sGameConfig;
+    static final String SEPARATOR = "_";
 
     public static void setEnabled(boolean enabled) {
         sEnabled = enabled;
@@ -39,7 +40,7 @@ public class FL {
 
     public static Boolean isGameFile(String fileName) {
         String[] splitList = fileName.split("_");
-        return splitList.length == 3 && splitList[2].matches("\\d*");
+        return splitList.length == 3 && splitList[1].matches("\\d*");
     }
 
     public static void init(Context context) {
@@ -234,6 +235,16 @@ public class FL {
 	public static boolean deleteFile(String logFileName) throws SecurityException {
         File file = new File(sConfig.builder.dirPath, logFileName);
         return file.delete();
+    }
+
+    public static String getGameTypeFromFileName(String logFileName) {
+        String[] split = logFileName.split(SEPARATOR);
+        return split[0];
+    }
+
+    public static String getGameStartTimeFromFileName(String logFileName) {
+        String[] split = logFileName.split(SEPARATOR);
+        return split[1];
     }
 
     private static void writeToZipFile(File file, ZipOutputStream zipStream) throws Exception {

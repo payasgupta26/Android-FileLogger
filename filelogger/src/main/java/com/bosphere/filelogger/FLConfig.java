@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import static com.bosphere.filelogger.FL.SEPARATOR;
 import static com.bosphere.filelogger.FLConst.Level.G;
 import static com.bosphere.filelogger.FLConst.Level.V;
 import static com.bosphere.filelogger.FLConst.Level.X;
@@ -251,7 +252,7 @@ public class FLConfig {
         public String formatFileName(int level) {
             switch (level) {
                 case X:  return "swoo-log-x.txt";
-                case G: return FL.sGameConfig.getGameType() + "_" + FL.sGameConfig.getGameId() + "_" + FL.sGameConfig.getStartTime() + ".txt";
+                case G: return FL.sGameConfig.getGameType() + SEPARATOR + FL.sGameConfig.getStartTime() + SEPARATOR + FL.sGameConfig.getGameId() + ".txt";
                 default: return "swoo-log.txt";
             }
         }
