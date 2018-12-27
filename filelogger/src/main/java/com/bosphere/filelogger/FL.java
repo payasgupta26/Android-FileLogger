@@ -7,10 +7,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.regex.Pattern;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -42,7 +39,7 @@ public class FL {
 
     public static Boolean isGameFile(String fileName) {
         String[] splitList = fileName.split("_");
-        return splitList.length == 3 && splitList[3].matches("\\d*");
+        return splitList.length == 3 && splitList[2].matches("\\d*");
     }
 
     public static void init(Context context) {
@@ -200,9 +197,8 @@ public class FL {
         }
     }
 
-    public static File compressFiles(Context context) {
-        String prefix = new SimpleDateFormat("dd-MM-yyyy_HH-mm", Locale.getDefault()).format(new Date());
-        File zipFile = new File(context.getExternalFilesDir(null),  prefix + "_swoo.zip");
+    public static File compressAllFiles(String zipFileLocation, String zipFileName) {
+        File zipFile = new File(zipFileLocation, zipFileName);
         try {
             FileOutputStream fos = new FileOutputStream(zipFile);
             ZipOutputStream zipOS = new ZipOutputStream(fos);
@@ -216,6 +212,28 @@ public class FL {
         } catch (Exception ignored) {
         }
         return zipFile;
+    }
+
+	public static File compressFiles(String zipFileLocation, String zipFileName, List<String> filesToBeZipped) {
+		File zipFile = new File(zipFileLocation, zipFileName);
+		try {
+			FileOutputStream fos = new FileOutputStream(zipFile);
+			ZipOutputStream zipOS = new ZipOutputStream(fos);
+			File logDir = new File(sConfig.builder.dirPath);
+			for (String file : filesToBeZipped) {
+				writeToZipFile(new File(logDir, file), zipOS);
+			}
+
+			zipOS.close();
+			fos.close();
+		} catch (Exception ignored) {
+		}
+		return zipFile;
+	}
+
+	public static boolean deleteFile(String logFileName) throws SecurityException {
+        File file = new File(sConfig.builder.dirPath, logFileName);
+        return file.delete();
     }
 
     private static void writeToZipFile(File file, ZipOutputStream zipStream) throws Exception {
